@@ -1,0 +1,19 @@
+{
+  "http": {
+    "port": 8080,
+    "host": "localhost"
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "booking_test",
+    "user": "booking_test_user",
+    "password": "booking_test_password",
+    "poolSize": 10
+  },
+  "jwt": {
+    "secret": "change-me-in-development",
+    "algorithm": "HS256",
+    "expiresInMinutes": 60
+  }
+}
