@@ -119,8 +119,7 @@ public class BookingIntegrationTests {
                 .onSuccess(response -> {
                     assertEquals(200, response.statusCode());
 
-                    JsonObject responseBody =
-                            response.bodyAsJsonObject();
+                    JsonObject responseBody = response.bodyAsJsonObject();
 
                     guestToken = responseBody.getString("token");
 
@@ -145,8 +144,7 @@ public class BookingIntegrationTests {
                 .onSuccess(response -> {
                     assertEquals(200, response.statusCode());
 
-                    JsonObject responseBody =
-                            response.bodyAsJsonObject();
+                    JsonObject responseBody = response.bodyAsJsonObject();
 
                     hostToken = responseBody.getString("token");
 
@@ -170,16 +168,12 @@ public class BookingIntegrationTests {
 
         webClient
                 .post(8080, "localhost", "/api/listings")
-                .putHeader(
-                        "Authorization",
-                        "Bearer " + hostToken
-                )
+                .putHeader("Authorization", "Bearer " + hostToken)
                 .sendJsonObject(body)
                 .onSuccess(response -> {
                     assertEquals(201, response.statusCode());
 
-                    JsonObject responseBody =
-                            response.bodyAsJsonObject();
+                    JsonObject responseBody = response.bodyAsJsonObject();
 
                     listingId = responseBody.getLong("id");
 
@@ -207,10 +201,7 @@ public class BookingIntegrationTests {
                         "localhost",
                         "/api/listings/" + listingId
                 )
-                .putHeader(
-                        "Authorization",
-                        "Bearer " + hostToken
-                )
+                .putHeader("Authorization", "Bearer " + hostToken)
                 .sendJsonObject(body)
                 .onSuccess(response -> {
                     assertEquals(200, response.statusCode());
@@ -247,10 +238,7 @@ public class BookingIntegrationTests {
 
         webClient
                 .post(8080, "localhost", "/api/listings")
-                .putHeader(
-                        "Authorization",
-                        "Bearer " + guestToken
-                )
+                .putHeader("Authorization", "Bearer " + guestToken)
                 .sendJsonObject(body)
                 .onSuccess(response -> {
                     assertEquals(403, response.statusCode());

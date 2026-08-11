@@ -37,7 +37,7 @@ public class UserService implements IUserService {
     }
 
     public Future<JsonObject> findByEmail(String email) {
-        Promise resPromise= Promise.promise();
+        Promise<JsonObject> resPromise= Promise.promise();
 
         _eventBus.<JsonObject>request(
                 "user.find.by.email",

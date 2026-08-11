@@ -99,12 +99,57 @@ public class DatabaseVerticle extends AbstractVerticle {
         vertx.eventBus()
                 .<JsonObject>consumer("booking.find.by.host")
                 .handler(this::findBookingsByHost);
+        vertx.eventBus()
+                .<JsonObject>consumer("booking.overlap.check")
+                .handler(this::bookingOverlapCheck);
 
         vertx.eventBus()
                 .<JsonObject>consumer("db.health.check")
                 .handler(this::healthCheck);
 
         return Future.succeededFuture();
+    }
+
+    private void bookingOverlapCheck(Message<JsonObject> message) {
+        JsonObject request = message.body();
+
+        Long listingId = request.getLong("listingId");
+        LocalDate checkIn = LocalDate.parse(request.getString("startDate"));
+        LocalDate checkOut = LocalDate.parse(request.getString("endDate"));
+
+        String sql = """
+        SELECT EXISTS (
+            SELECT 1
+            FROM bookings
+            WHERE listing_id = $1
+              AND status IN ('PENDING', 'CONFIRMED')
+              AND start_date < $3
+              AND end_date > $2
+        ) AS overlapping
+        """;
+
+        _pool.preparedQuery(sql)
+                .execute(Tuple.of(
+                        listingId,
+                        checkIn,
+                        checkOut
+                ))
+                .onSuccess(rows -> {
+                    boolean overlapping = rows
+                            .iterator()
+                            .next()
+                            .getBoolean("overlapping");
+
+                    if (overlapping) {
+                        message.fail(409, "Listing already has an overlapping booking");
+                        return;
+                    }
+
+                    message.reply(new JsonObject().put("overlapping", false));
+                })
+                .onFailure(error ->
+                        message.fail(500, error.getMessage())
+                );
     }
 
     private void healthCheck(Message<JsonObject> message) {
@@ -601,6 +646,8 @@ public class DatabaseVerticle extends AbstractVerticle {
                 .onFailure(err -> {_logger.error("Failed to find booking", err);message.fail(500, err.getMessage());
                 });
     }
+
+
 
     private Future<Void> verifyDatabase() {
         return _pool.query("SELECT 1")

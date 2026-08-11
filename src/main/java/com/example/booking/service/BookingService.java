@@ -24,9 +24,16 @@ public class BookingService implements IBookingService {
                 .put("listingId", listingId);
 
         return _eventBus.<JsonObject>request(
-                "booking.create",
-                request
-        ).map(Message::body);
+                        "booking.overlap.check",
+                        request
+                )
+                .compose(overlapCheck ->
+                        _eventBus.<JsonObject>request(
+                                "booking.create",
+                                request
+                        )
+                )
+                .map(Message::body);
     }
 
     public Future<JsonObject> findByHost(Long hostId) {
