@@ -47,6 +47,9 @@ public class BookingIntegrationTests {
                 .onFailure(testContext::failNow);
     }
 
+
+
+
     @Test
     @Order(1)
     void shouldReturnHealth(VertxTestContext testContext) {
@@ -272,6 +275,61 @@ public class BookingIntegrationTests {
                 .onSuccess(response -> {
                     assertEquals(201, response.statusCode());
                     testContext.completeNow();
+                })
+                .onFailure(testContext::failNow);
+    }
+
+    @Test
+    @Order(10)
+    void shouldNotCreateDoubleBookingsOnListingWithPendingOrConfirmedStatus(
+            Vertx vertx,
+            VertxTestContext testContext) {
+
+        JsonObject booking1 = new JsonObject()
+                .put("startDate", "2026-08-21")
+                .put("endDate", "2026-08-24");
+
+        JsonObject booking2 = new JsonObject()
+                .put("startDate", "2026-08-22")
+                .put("endDate", "2026-08-25");
+
+        webClient
+                .post(
+                        8080,
+                        "localhost",
+                        "/api/listings/" + listingId + "/bookings"
+                )
+                .putHeader(
+                        "Authorization",
+                        "Bearer " + guestToken
+                )
+                .sendJsonObject(booking1)
+                .onSuccess(resp -> {
+
+                    testContext.verify(() -> {
+                        assertEquals(201, resp.statusCode());
+                    });
+
+                    webClient
+                            .post(
+                                    8080,
+                                    "localhost",
+                                    "/api/listings/" + listingId + "/bookings"
+                            )
+                            .putHeader(
+                                    "Authorization",
+                                    "Bearer " + guestToken
+                            )
+                            .sendJsonObject(booking2)
+                            .onSuccess(resp2 -> {
+
+                                testContext.verify(() -> {
+                                    assertEquals(409, resp2.statusCode());
+                                });
+
+                                testContext.completeNow();
+                            })
+                            .onFailure(testContext::failNow);
                 })
                 .onFailure(testContext::failNow);
     }

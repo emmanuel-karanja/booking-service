@@ -21,7 +21,7 @@ CREATE TABLE listings (
                           id BIGSERIAL PRIMARY KEY,
                           host_id BIGINT NOT NULL
                               REFERENCES users(id)
-                                  ON DELETE CASCADE,
+                              ON DELETE CASCADE,
                           title VARCHAR(255) NOT NULL,
                           description TEXT,
                           location VARCHAR(255) NOT NULL,
