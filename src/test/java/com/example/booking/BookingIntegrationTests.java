@@ -1,8 +1,11 @@
 package com.example.booking;
 
 import com.example.booking.verticles.MainVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -255,23 +258,11 @@ public class BookingIntegrationTests {
     void guestShouldCreateBooking(
             VertxTestContext testContext) {
 
-        JsonObject body = new JsonObject()
+        JsonObject booking = new JsonObject()
                 .put("startDate", "2026-08-15")
                 .put("endDate", "2026-08-20");
 
-        webClient
-                .post(
-                        8080,
-                        "localhost",
-                        "/api/listings/"
-                                + listingId
-                                + "/bookings"
-                )
-                .putHeader(
-                        "Authorization",
-                        "Bearer " + guestToken
-                )
-                .sendJsonObject(body)
+        createBooking(listingId,booking)
                 .onSuccess(response -> {
                     assertEquals(201, response.statusCode());
                     testContext.completeNow();
@@ -281,7 +272,7 @@ public class BookingIntegrationTests {
 
     @Test
     @Order(10)
-    void shouldNotCreateDoubleBookingsOnListingWithPendingOrConfirmedStatus(
+    void shouldNotCreateDoubleBookingsOnListingWithPendingStatus(
             Vertx vertx,
             VertxTestContext testContext) {
 
@@ -291,9 +282,32 @@ public class BookingIntegrationTests {
 
         JsonObject booking2 = new JsonObject()
                 .put("startDate", "2026-08-22")
-                .put("endDate", "2026-08-25");
+                .put("endDate", "2026-08-26");
 
-        webClient
+        createBooking(listingId, booking1)
+                .onSuccess(resp -> {
+                    testContext.verify(() ->
+                            assertEquals(201, resp.statusCode())
+                    );
+
+                    createBooking(listingId, booking2)
+                            .onSuccess(resp2 -> {
+                                testContext.verify(() ->
+                                        assertEquals(409, resp2.statusCode())
+                                );
+
+                                testContext.completeNow();
+                            })
+                            .onFailure(testContext::failNow);
+                })
+                .onFailure(testContext::failNow);
+    }
+
+    private Future<HttpResponse<Buffer>> createBooking(
+            Long listingId,
+            JsonObject booking) {
+
+        return webClient
                 .post(
                         8080,
                         "localhost",
@@ -303,34 +317,6 @@ public class BookingIntegrationTests {
                         "Authorization",
                         "Bearer " + guestToken
                 )
-                .sendJsonObject(booking1)
-                .onSuccess(resp -> {
-
-                    testContext.verify(() -> {
-                        assertEquals(201, resp.statusCode());
-                    });
-
-                    webClient
-                            .post(
-                                    8080,
-                                    "localhost",
-                                    "/api/listings/" + listingId + "/bookings"
-                            )
-                            .putHeader(
-                                    "Authorization",
-                                    "Bearer " + guestToken
-                            )
-                            .sendJsonObject(booking2)
-                            .onSuccess(resp2 -> {
-
-                                testContext.verify(() -> {
-                                    assertEquals(409, resp2.statusCode());
-                                });
-
-                                testContext.completeNow();
-                            })
-                            .onFailure(testContext::failNow);
-                })
-                .onFailure(testContext::failNow);
+                .sendJsonObject(booking);
     }
 }
