@@ -62,7 +62,6 @@ public class BookingIntegrationTests {
 
 
     @Test
-    @Order(1)
     void shouldReturnHealth(VertxTestContext testContext) {
 
         webClient
@@ -82,7 +81,7 @@ public class BookingIntegrationTests {
     }
 
     @Test
-    @Order(2)
+    @Order(1)
     void shouldRegisterGuest(VertxTestContext testContext) {
 
         JsonObject body = new JsonObject()
@@ -101,7 +100,7 @@ public class BookingIntegrationTests {
     }
 
     @Test
-    @Order(3)
+    @Order(2)
     void shouldRegisterHost(VertxTestContext testContext) {
 
         JsonObject body = new JsonObject()
@@ -120,7 +119,7 @@ public class BookingIntegrationTests {
     }
 
     @Test
-    @Order(4)
+    @Order(3)
     void shouldLoginGuest(VertxTestContext testContext) {
 
         JsonObject body = new JsonObject()
@@ -145,7 +144,7 @@ public class BookingIntegrationTests {
     }
 
     @Test
-    @Order(5)
+    @Order(4)
     void shouldLoginHost(VertxTestContext testContext) {
 
         JsonObject body = new JsonObject()
@@ -170,7 +169,7 @@ public class BookingIntegrationTests {
     }
 
     @Test
-    @Order(6)
+    @Order(5)
     void hostShouldCreateListing(
             VertxTestContext testContext) {
 
@@ -199,7 +198,7 @@ public class BookingIntegrationTests {
     }
 
     @Test
-    @Order(7)
+    @Order(6)
     void hostShouldUpdateListing(
             VertxTestContext testContext) {
 
@@ -240,7 +239,7 @@ public class BookingIntegrationTests {
     }
 
     @Test
-    @Order(8)
+    @Order(7)
     void guestShouldNotCreateListing(
             VertxTestContext testContext) {
 
@@ -262,7 +261,7 @@ public class BookingIntegrationTests {
     }
 
     @Test
-    @Order(9)
+    @Order(8)
     void guestShouldCreateBooking(
             VertxTestContext testContext) {
 
@@ -279,10 +278,12 @@ public class BookingIntegrationTests {
     }
 
     @Test
-    @Order(10)
+    @Order(9)
     void shouldNotCreateDoubleBookingsOnListingWithPendingOrConfirmedStatus(
             Vertx vertx,
             VertxTestContext testContext) {
+
+
 
         JsonObject booking1 = new JsonObject()
                 .put("startDate", "2026-08-21")
@@ -291,6 +292,7 @@ public class BookingIntegrationTests {
         JsonObject booking2 = new JsonObject()
                 .put("startDate", "2026-08-22")
                 .put("endDate", "2026-08-26");
+
 
         createBooking(listingId, booking1)
                 .onSuccess(resp -> {
@@ -326,73 +328,5 @@ public class BookingIntegrationTests {
                         "Bearer " + guestToken
                 )
                 .sendJsonObject(booking);
-    }
-
-    private Future<JsonObject> registerUser(String userType){
-        Promise<JsonObject> userPromise= Promise.promise();
-        JsonObject user=new JsonObject().put("email",userType+Math.random()+"@example.com")
-                .put("password","password123");
-        webClient.post(80,"localhost","/api/auth/register")
-                .send()
-                .onSuccess(response->{
-                    userPromise.complete(response.bodyAsJsonObject());
-                }).onFailure(userPromise::fail);
-
-        return userPromise.future();
-    }
-
-    private Future<JsonObject> loginUser(String email, String password){
-
-        Promise<JsonObject> loginPromise=Promise.promise();
-
-        JsonObject creds=new JsonObject()
-                .put("email",email)
-                .put("password",password);
-
-        webClient.post(80,"localhost","/api/auth/login")
-                .sendJsonObject(creds)
-                .onSuccess(response->{
-                    loginPromise.complete(response.bodyAsJsonObject());
-                }).onFailure(loginPromise::fail);
-
-        return loginPromise.future();
-    }
-
-
-    private Future<JsonObject> createRandomListing(String userType) {
-        Promise<JsonObject> listingPromise = Promise.promise();
-
-        JsonObject randomListing = new JsonObject()
-                .put("title", userType + UUID.randomUUID().toString())
-                .put("description", UUID.randomUUID().toString())
-                .put("location", "TestLocation" + UUID.randomUUID().toString())
-                .put("pricePerNight", 100);
-
-
-        webClient.post(80, "localhost", "/api/listings")
-                .sendJsonObject(randomListing)
-                .onSuccess(response -> {
-                    listingPromise.complete(response.bodyAsJsonObject());
-                }).onFailure(listingPromise::fail);
-
-        return listingPromise.future();
-    }
-
-
-    private List<LocalDate> getOverlappingDates(
-            LocalDate startDate,
-            LocalDate endDate) {
-
-        List<LocalDate> dates = new ArrayList<>();
-
-        long days = ChronoUnit.DAYS.between(startDate, endDate);
-
-        long firstOffset = ThreadLocalRandom.current().nextLong(days + 1);
-        long secondOffset = ThreadLocalRandom.current().nextLong(firstOffset, days + 1);
-
-        dates.add(startDate.plusDays(firstOffset));
-        dates.add(startDate.plusDays(secondOffset));
-
-        return dates;
     }
 }
