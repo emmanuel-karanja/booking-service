@@ -280,7 +280,7 @@ public class BookingIntegrationTests {
 
     @Test
     @Order(10)
-    void shouldNotCreateDoubleBookingsOnListingWithPendingStatus(
+    void shouldNotCreateDoubleBookingsOnListingWithPendingOrConfirmedStatus(
             Vertx vertx,
             VertxTestContext testContext) {
 
