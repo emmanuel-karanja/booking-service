@@ -6,6 +6,7 @@ import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 
@@ -36,28 +37,9 @@ public class MainVerticle extends AbstractVerticle {
                     System.out.println(json.encodePrettily());
                     _logger.info("Configs loaded {}", json.encodePrettily());
                 })
-                // Convert JSON to AppConfig
                 .map(json -> json.mapTo(AppConfig.class))
-                // Deploy DatabaseVerticle
-                .compose(config -> {
-                    DeploymentOptions dbOptions =
-                            new DeploymentOptions()
-                                    .setConfig(JsonObject.mapFrom(config.database()));
-                    return vertx.deployVerticle(
-                            new DatabaseVerticle(),
-                            dbOptions
-                    ).map(config);  // Note, this is critical!
-                })
-                // Deploy HttpVerticle
-                .compose(config -> {
-                    DeploymentOptions httpOptions =
-                            new DeploymentOptions()
-                                    .setConfig(JsonObject.mapFrom(config));
-                    return vertx.deployVerticle(
-                            new HttpVerticle(),
-                            httpOptions
-                    );
-                })
+                .compose(this::deployDatabaseVerticle)
+                .compose(this::deployHttpVerticle)
                 .onSuccess(id -> {
                     System.out.println("Application started.");
                     _logger.info("Application Started successully {}", id);
@@ -67,5 +49,27 @@ public class MainVerticle extends AbstractVerticle {
                        _logger.error("Application startup failed",error);
                         startPromise.fail(error);
                 });
+    }
+
+
+    private Future<AppConfig> deployDatabaseVerticle(AppConfig config){
+        DeploymentOptions dbOptions =
+                new DeploymentOptions()
+                        .setConfig(JsonObject.mapFrom(config.database()));
+
+        return vertx.deployVerticle(
+                new DatabaseVerticle(),
+                dbOptions
+        ).map(config);  // Note, this is critical!
+    }
+
+    private Future<String> deployHttpVerticle(AppConfig config){
+        DeploymentOptions httpOptions =
+                new DeploymentOptions()
+                        .setConfig(JsonObject.mapFrom(config));
+        return vertx.deployVerticle(
+                new HttpVerticle(),
+                httpOptions
+        );
     }
 }

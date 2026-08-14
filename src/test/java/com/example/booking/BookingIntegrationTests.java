@@ -283,8 +283,6 @@ public class BookingIntegrationTests {
             Vertx vertx,
             VertxTestContext testContext) {
 
-
-
         JsonObject booking1 = new JsonObject()
                 .put("startDate", "2026-08-21")
                 .put("endDate", "2026-08-24");

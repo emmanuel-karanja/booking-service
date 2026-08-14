@@ -1,5 +1,8 @@
 package com.example.booking.config;
 
-public record JwtConfig(String secret,
-                        String algorithm,
-                        int expiresInMinutes){}
+public record JwtConfig(
+        String secret,
+        String algorithm,
+        int expiresInMinutes
+)
+{}
