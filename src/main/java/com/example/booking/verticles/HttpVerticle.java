@@ -68,8 +68,7 @@ public class HttpVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         // Middleware
-        router.route()
-                .handler(BodyHandler.create());
+        router.route().handler(BodyHandler.create());
         router.route().handler(new LoggingHandler());
 
         // Public routes

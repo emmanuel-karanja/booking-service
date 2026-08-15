@@ -316,15 +316,8 @@ public class BookingIntegrationTests {
             JsonObject booking) {
 
         return webClient
-                .post(
-                        8080,
-                        "localhost",
-                        "/api/listings/" + listingId + "/bookings"
-                )
-                .putHeader(
-                        "Authorization",
-                        "Bearer " + guestToken
-                )
+                .post(8080, "localhost", "/api/listings/" + listingId + "/bookings")
+                .putHeader("Authorization", "Bearer " + guestToken)
                 .sendJsonObject(booking);
     }
 }

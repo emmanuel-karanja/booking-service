@@ -60,7 +60,7 @@ public class MainVerticle extends AbstractVerticle {
         return vertx.deployVerticle(
                 new DatabaseVerticle(),
                 dbOptions
-        ).map(config);  // Note, this is critical!
+        ).map(config);  // Note, this is critical! to make the AppConfig available downstream
     }
 
     private Future<String> deployHttpVerticle(AppConfig config){

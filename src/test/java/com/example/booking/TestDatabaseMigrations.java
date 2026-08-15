@@ -25,7 +25,6 @@ public class TestDatabaseMigrations {
                 .load();
 
         flyway.clean();
-        flyway.migrate();
     }
 
 }
