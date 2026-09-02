@@ -57,19 +57,14 @@ public class MainVerticle extends AbstractVerticle {
                 new DeploymentOptions()
                         .setConfig(JsonObject.mapFrom(config.database()));
 
-        return vertx.deployVerticle(
-                new DatabaseVerticle(),
-                dbOptions
-        ).map(config);  // Note, this is critical! to make the AppConfig available downstream
+        return vertx.deployVerticle(new DatabaseVerticle())
+                .map(id->config);  // Note, this is critical! to make the AppConfig available downstream
     }
 
     private Future<String> deployHttpVerticle(AppConfig config){
         DeploymentOptions httpOptions =
                 new DeploymentOptions()
                         .setConfig(JsonObject.mapFrom(config));
-        return vertx.deployVerticle(
-                new HttpVerticle(),
-                httpOptions
-        );
+        return vertx.deployVerticle(new HttpVerticle());
     }
 }

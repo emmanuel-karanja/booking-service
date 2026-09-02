@@ -29,7 +29,7 @@ public class DatabaseVerticle extends AbstractVerticle {
             createPool();
 
             verifyDatabase()
-                    .compose(v -> registerHandlers())
+                    .compose(this::registerHandlers)
                     .onSuccess(v -> {
                         _logger.info("DatabaseVerticle started");
                         startPromise.complete();
@@ -61,7 +61,7 @@ public class DatabaseVerticle extends AbstractVerticle {
         _pool = Pool.pool(vertx, connectOptions, poolOptions);
     }
 
-    private Future<Void> registerHandlers() {
+    private Future<Void> registerHandlers(Void v) {
         vertx.eventBus()
                 .<JsonObject>consumer("user.create")
                 .handler(this::createUser);

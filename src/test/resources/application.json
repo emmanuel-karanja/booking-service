@@ -1,6 +1,6 @@
 {
   "http": {
-    "port": 8080,
+    "port": 0,
     "host": "localhost"
   },
   "database": {

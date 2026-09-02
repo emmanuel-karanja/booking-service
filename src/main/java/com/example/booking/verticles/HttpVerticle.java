@@ -177,8 +177,7 @@ public class HttpVerticle extends AbstractVerticle {
     }
 
     private void handleCreateListing(RoutingContext ctx) {
-
-
+        
         Long hostId = Long.valueOf(
                 ctx.user()
                         .principal()
